@@ -1,0 +1,50 @@
+#lang racket
+(require "character.rkt")
+(require "help_procs.rkt")
+(provide place%)
+
+
+#|The template for places.|#
+
+(define place%                                                             
+  (class object%                                                           
+    (init-field name
+                description
+                [exits-ht null]
+                [chars-in-place null]
+                [items-in-place null]) 
+    (define/public (get-name)                                              ;Places names, descriptions etc...
+      name) 
+    (define/public (get-description)
+      description)
+    (define/public (add-char char)                                         ;Updates characters placement and handles if they are already there.
+      (if (occurs? char chars-in-place)                                    ;Occurs? will help to check for duplicates.
+          (display (error "Character already there")) 
+          (set! chars-in-place
+                (cons char chars-in-place)))) 
+    (define/public (get-char char-name)                                    ;A function to return characters, filter-remain will help with it.
+      (filter-remain char-name chars-in-place))
+    (define/public (delete-char char-name)                                 ;Deletes characters, filter-delete helps with that.
+      (set! chars-in-place
+            (filter-delete char-name chars-in-place)))
+    (define/public (characters)                                            ;Returns a list with the characters except for Dolan, filter-delete helps with that.
+      (filter-delete "Dolan" chars-in-place))
+    (define/public (add-item item)                                         ;Adds items and handles if they are already in place.
+      (if (occurs? item items-in-place)
+          (display (error "Item already there")) 
+          (set! items-in-place (cons item items-in-place))))   
+    (define/public (get-items-in-place)                                    ;Returns items from its place, necessary for certain functions like "look" or "take" in the game.              
+      items-in-place)  
+    (define/public (get-item item-name)                                    ;Returns a certain item for functions like "take".
+      (filter-remain item-name items-in-place))
+    (define/public (remove-item item-name)                                 ;Removes items from rooms.
+      (set! items-in-place (filter-delete item-name items-in-place)))
+    (define/public (items)                                                 
+      items-in-place)                                      
+    (define/public (get-neighbour! exit-name)                  
+      (hash-ref exits-ht exit-name))    
+    (define/public (add-neighbour! exit-name place)                        ;Add-neighbour will be used for connecting the rooms 
+      (hash-set! exits-ht exit-name place))                                ;in another function called "connect-places!".
+        (define/public (exits)                                             ;Exits and get-neighbour! functions will be necessary for 
+      (hash-keys exits-ht))                                                ;other functions like "look" and "move".
+    (super-new)))

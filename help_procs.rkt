@@ -1,0 +1,44 @@
+#lang racket
+
+(provide (all-defined-out))
+
+
+#|Some functions that are necessary to root out certain values for further commands.|#
+
+
+(define atom?                                        ;Our atom? function from lab 2. Checks for atoms.
+  (lambda (var)
+    (not (or (list? var) (cons? var)))))
+
+
+(define occurs?                                      ;Our occurs? function from lab 2. Returns the values we look for.
+  (lambda (arg lst)                              
+    (cond ((null? lst) #f)                   
+          ((atom? lst) (equal? arg lst))
+          ((equal? arg (car lst))) 
+          ((number? arg) (occurs? arg (cdr lst)))    
+          (else (occurs? arg (cdr lst))))))
+
+
+(define (filter-remain name lst)                     ;A modified filter function for keeping certain elements.
+  (let
+      ((filter-lst
+        (filter (lambda (var)
+                  (equal? var name))
+                lst)))
+    (cond
+      ((null? filter-lst) #f)
+      (else
+       (car filter-lst)))))
+
+
+(define (filter-delete name lst)                     ;A modified filter function for removing certain elements.
+  (filter (lambda (var)
+            (not
+             (equal? (send var get-name) name)))
+          lst))
+
+
+(define (connect-places! place1 exit1 place2 exit2)  ;Help function to connect rooms
+  (send place1 add-neighbour! exit1 place2)
+  (send place2 add-neighbour! exit2 place1))

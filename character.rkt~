@@ -1,0 +1,41 @@
+#lang racket
+(require "help_procs.rkt")
+(provide character%)
+(provide (all-defined-out))
+
+
+#|Template for characters.|#
+
+(define character%
+  (class object%
+    (init-field name
+                talk-line
+                description
+                [character-location null]
+                [inventory null])
+    (define/public (get-name)                                ;Characters name, description, location, talk-line.
+      name)
+    (define/public (get-description)
+      description)
+    (define/public (get-place)
+      character-location)  
+    (define/public (get-talk-line)
+      talk-line)
+    (define/public (move-to new-place)                       ;Moves the character, checks if already there.
+      (cond
+        ((equal? character-location new-place)
+         (display (error "Character already there.")))       ;Handles if the character is already there.
+        (else
+         (when (not (null? character-location))              ;Updates character-location.
+           (send character-location delete-char name))
+         (send new-place add-char this)                
+         (set! character-location new-place))))        
+    (define/public (get-inventory)                           ;Inventory.
+      inventory)
+    (define/public (get-item item-name)                      ;Updates inventory when character takes items.
+      (set! inventory (cons item-name inventory)))
+    (define/public (receive-item item)                       ;Necessary for a "special-character" to receive something.
+      (set! inventory (cons item inventory)))
+    (define/public (remove-item item-name)                   ;Necessary to remove items from rooms when taken or from inventory when given away.
+      (set! inventory (filter-delete item-name inventory)))
+    (super-new)))
