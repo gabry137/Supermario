@@ -51,11 +51,8 @@ for the viewbox (i is height, j is width) and 10 squares height with 250 squares
                         50]
                        [(and (= i 5) (member j '(5)))                ;90 = enemies
                         90]
-                       [(and (= i 7) (member j '(4)))                ;0 = Andreas    
-                        0]
                        [else
                         (modulo 1 10)]))))))]))
-
 
 
 (define (help-connect n k)
@@ -67,9 +64,25 @@ for the viewbox (i is height, j is width) and 10 squares height with 250 squares
                        (vector-take (vector-drop (vector-ref (send level1 get-board) n) k) 10))
          (help-connect (+ n 1) k))))
 
-
 (define (connect-view-level)
-  (help-connect 0 0))
+  (help-connect 0 0)
+  (andreas-pos))
+
+(define move
+  (let ([k 0])
+    (lambda arg
+      (cond
+        [(null? arg)
+         display "What direction?"]
+        [(eqv? (car arg) 'right)
+        (set! k (+ k 1))
+        (help-connect 0 k)
+        (andreas-pos)]
+        [else
+         (error "Unkown request")]))))
+
+(define (andreas-pos)
+  (vector-set! (vector-ref (send viewbox get-board) 7) 4 #(0)))
 
 
   
@@ -85,7 +98,7 @@ for the viewbox (i is height, j is width) and 10 squares height with 250 squares
 
 #|Jump function that updates when Andreas jumps or not, null arguments lets him jump and "jump down" lets him fall".|#
 
-(define move
+#|(define move
   (let ([andreas-horiz 7]
         [andreas-verti 4])
     (lambda (args)
@@ -136,7 +149,7 @@ for the viewbox (i is height, j is width) and 10 squares height with 250 squares
          (error "Unknown command")))))
       (check-enemy args))))
 
-
+|#
 
 
 
