@@ -1,60 +1,87 @@
 #lang racket/gui
 (require "place.rkt")
+(require "help_procs.rkt")
+(provide (all-defined-out))
+
 (require racket/trace)
 
-(define board-width-box 10)
-(define board-height-box 10)
-(define board-width-level 250)
-(define board-height-level 10)
-
-(define enumerate                
-  (lambda (from to steps)        
-    (if (> from to)
-        '()
-        (cons from (enumerate (+ from steps) to steps)))))
+#|Defines some values for the board|#
 
 
-#|Sets up the worldview for Andreas, each "matrix" slot will be defined as air, obstacles enemies etc
+#|Sets up the worldview for Andreas and levels, each "matrix" slot will be defined as air, obstacles enemies etc
 that can roll in and change depending on it's pixel coordinates.|#
+
+#|The defined areas will have predetermined values on their borders. 10 squares for heigt and width
+for the viewbox (i is height, j is width) and 10 squares height with 250 squares width for levels.|#
 
 (define viewbox
   (new place%
-   [name "Viewbox"]
-   [description "The frame for what the player can see."]
-   [board (build-vector
-    board-width-box
-    (lambda (i)
-      (build-vector
-       board-height-box
-       (lambda (j)
-         (vector
-          (cond
-            [(and (= i 9) (member j '(0 1 2 3 4 5 6 7 8 9)))  ;50 = obstacles
-             50]
-            [(and (= i 8) (member j '(0 1 2 3 4 5 6 7 8 9)))
-             50]
-            [(and (= i 5) (member j '(5)))                    ;90 = enemies
-             90]
-            [(and (= i 7) (member j '(4)))
-             0]
-            [else
-             (modulo 1 10)]))))))]))
+       [name "Viewbox"]
+       [description "The frame for what the player can see."]
+       [board (build-vector
+               10
+               (lambda (i)
+                 (build-vector
+                  10
+                  (lambda (j)
+                    (vector
+                     (cond
+                       [(and (= i 9) (member j '(0 1 2 3 4 5 6 7 8 9)))  ;50 = obstacles
+                        50]
+                       [(and (= i 8) (member j '(0 1 2 3 4 5 6 7 8 9)))
+                        50]
+                       [else
+                        (modulo 1 10)]))))))]))
 
-(define level1 
-   (build-vector
-    board-height-level
-    (lambda (i)
-      (build-vector
-       board-width-level
-       (lambda (j)
-         (vector
-          (cond
-            [(and (= i 9) (member j (enumerate 0 250 1)))  ;50 = obstacles
-             50]
-            [(and (= i 8) (member j (enumerate 0 250 1)))
-             50]
-            [else
-             (modulo 1 10)])))))))
+(define level1
+  (new place%
+       [name "Level 1"]
+       [description "First level."]
+       [board (build-vector
+               10
+               (lambda (i)
+                 (build-vector
+                  15
+                  (lambda (j)
+                    (vector
+                     (cond
+                       [(and (= i 9) (member j (enumerate 0 15 1)))  ;50 = obstacles
+                        50]
+                       [(and (= i 8) (member j (enumerate 0 15 1)))  ;50 = obstacles
+                        50]
+                       [(and (= i 5) (member j '(5)))                ;90 = enemies
+                        90]
+                       [(and (= i 7) (member j '(4)))                ;0 = Andreas    
+                        0]
+                       [else
+                        (modulo 1 10)]))))))]))
+
+
+
+(define (help-connect n k)
+      (cond
+        ((= n 10)
+         (send viewbox get-board))
+        (else
+         (vector-copy! (vector-ref (send viewbox get-board) n) 0
+                       (vector-take (vector-drop (vector-ref (send level1 get-board) n) k) 10))
+         (help-connect (+ n 1) k))))
+
+
+(define (connect-view-level)
+  (help-connect 0 0))
+
+
+  
+
+
+
+
+
+
+
+
+
 
 #|Jump function that updates when Andreas jumps or not, null arguments lets him jump and "jump down" lets him fall".|#
 
